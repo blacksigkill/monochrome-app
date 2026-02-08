@@ -10,8 +10,8 @@
         const isExternalAuth = urlStr.includes('last.fm') || 
                                urlStr.includes('spotify.com') || 
                                urlStr.includes('google.com') ||
-                               urlStr.includes('discord.com');
-                               urlStr.includes('monochrome-database.firebaseapp.com')
+                               urlStr.includes('discord.com') ||
+                               urlStr.includes('monochrome-database.firebaseapp.com');
 
         if (isExternalAuth) {
             if (window.__TAURI__?.shell) {
