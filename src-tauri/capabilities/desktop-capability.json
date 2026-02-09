@@ -5,6 +5,7 @@
   "permissions": [
     "core:webview:allow-create-webview-window",
     "notification:default",
-    "global-shortcut:default"
+    "global-shortcut:default",
+    "google-auth:default"
   ]
 }

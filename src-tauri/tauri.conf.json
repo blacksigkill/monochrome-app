@@ -25,7 +25,8 @@
       "csp": null,
       "capabilities": [
         "main-capability",
-        "desktop-capability"
+        "desktop-capability",
+        "mobile-capability"
       ]
     }
   },

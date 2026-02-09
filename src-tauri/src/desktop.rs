@@ -101,10 +101,7 @@ fn update_discord_presence(
     if !is_paused {
         let now = SystemTime::now();
         let song_start = now - Duration::from_secs_f64(current_sec);
-        let start_timestamp = song_start
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs() as i64;
+        let start_timestamp = song_start.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
         activity["timestamps"] = json!({ "start": start_timestamp });
 
         let mut last_song_guard = state.last_song.lock().unwrap();
@@ -207,8 +204,7 @@ pub fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         .item(&quit)
         .build()?;
 
-    let icon =
-        Image::from_bytes(include_bytes!("../icons/icon.png")).expect("Failed to load icon");
+    let icon = Image::from_bytes(include_bytes!("../icons/icon.png")).expect("Failed to load icon");
     let _tray = TrayIconBuilder::new()
         .icon(icon)
         .menu(&menu)
@@ -262,6 +258,7 @@ pub fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
 
     // Main window
     let app_handle = app.handle().clone();
+    let init_script = include_str!("../discord-init.js");
     let window = WebviewWindowBuilder::new(
         app,
         "main",
@@ -269,7 +266,7 @@ pub fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     )
     .title("Monochrome")
     .inner_size(1200.0, 800.0)
-    .initialization_script(include_str!("../discord-init.js"))
+    .initialization_script(&init_script)
     .on_download(move |_webview, event| {
         if let tauri::webview::DownloadEvent::Requested { destination, .. } = event {
             let state = app_handle.state::<DownloadState>();

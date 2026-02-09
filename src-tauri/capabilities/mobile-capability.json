@@ -1,0 +1,16 @@
+{
+  "identifier": "mobile-capability",
+  "windows": ["main"],
+  "platforms": ["iOS", "android"],
+  "permissions": [
+    "core:default",
+    "core:event:default",
+    "google-auth:default"
+  ],
+  "remote": {
+    "urls": [
+      "https://monochrome.samidy.com",
+      "https://monochrome-database.firebaseapp.com"
+    ]
+  }
+}
