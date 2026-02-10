@@ -39,6 +39,97 @@ jobs:
       - name: Generate iOS project
         run: npm run tauri ios init
 
+      - name: Inject Firebase plist and patch Info.plist
+        env:
+          IOS_GOOGLE_SERVICE_INFO_PLIST_B64: ${{ secrets.IOS_GOOGLE_SERVICE_INFO_PLIST_B64 }}
+        run: |
+          set -euo pipefail
+          export PROJECT_DIR="$GITHUB_WORKSPACE/src-tauri/gen/apple"
+          python3 - <<'PY'
+          import base64
+          import json
+          import os
+          import plistlib
+          import sys
+
+          project_dir = os.environ["PROJECT_DIR"]
+          data_b64 = os.environ.get("IOS_GOOGLE_SERVICE_INFO_PLIST_B64", "").strip()
+          if not data_b64:
+              print("Missing IOS_GOOGLE_SERVICE_INFO_PLIST_B64 secret.")
+              sys.exit(1)
+
+          plist_path = os.path.join(project_dir, "GoogleService-Info.plist")
+          with open(plist_path, "wb") as f:
+              f.write(base64.b64decode(data_b64))
+
+          with open(plist_path, "rb") as f:
+              firebase_plist = plistlib.load(f)
+
+          reversed_client_id = (firebase_plist.get("REVERSED_CLIENT_ID") or "").strip()
+          if not reversed_client_id:
+              print("REVERSED_CLIENT_ID missing in GoogleService-Info.plist.")
+              sys.exit(1)
+
+          product_name = ""
+          try:
+              with open("src-tauri/tauri.conf.json", "r", encoding="utf-8") as f:
+                  product_name = (json.load(f).get("productName") or "").strip()
+          except Exception:
+              product_name = ""
+
+          candidates = []
+          if product_name:
+              candidates.append(os.path.join(project_dir, product_name, "Info.plist"))
+
+          for root, _dirs, files in os.walk(project_dir):
+              if "Info.plist" in files:
+                  path = os.path.join(root, "Info.plist")
+                  if "/Pods/" in path or "/Tests/" in path or "/UITests/" in path:
+                      continue
+                  if path not in candidates:
+                      candidates.append(path)
+
+          patched = []
+          for path in candidates:
+              if not os.path.exists(path):
+                  continue
+              try:
+                  with open(path, "rb") as f:
+                      data = plistlib.load(f)
+              except Exception:
+                  continue
+
+              url_types = data.get("CFBundleURLTypes") or []
+              has_scheme = False
+              for entry in url_types:
+                  if isinstance(entry, dict):
+                      schemes = entry.get("CFBundleURLSchemes") or []
+                      if reversed_client_id in schemes:
+                          has_scheme = True
+                          break
+              if not has_scheme:
+                  url_types.append({"CFBundleURLSchemes": [reversed_client_id]})
+              data["CFBundleURLTypes"] = url_types
+
+              query_schemes = data.get("LSApplicationQueriesSchemes") or []
+              for scheme in ("googlechrome", "safari"):
+                  if scheme not in query_schemes:
+                      query_schemes.append(scheme)
+              data["LSApplicationQueriesSchemes"] = query_schemes
+
+              with open(path, "wb") as f:
+                  plistlib.dump(data, f)
+              patched.append(path)
+
+          if not patched:
+              print("No Info.plist patched. Check generated project structure.")
+              sys.exit(1)
+
+          print("Patched Info.plist files:")
+          for path in patched:
+              print(path)
+          PY
+
       - name: Generate Tauri icons
         run: |
           set -euo pipefail
