@@ -36,6 +36,9 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Generate iOS project
+        run: npm run tauri ios init
+
       - name: Generate Tauri icons
         run: |
           set -euo pipefail
@@ -46,9 +49,6 @@ jobs:
           fi
 
           npm run tauri -- icon "$ICON_SOURCE"
-
-      - name: Generate iOS project
-        run: npm run tauri ios init
 
       - name: Build unsigned iOS .ipa
         run: |
