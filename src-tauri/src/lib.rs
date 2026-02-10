@@ -32,6 +32,7 @@ pub fn run() {
                 .open_js_links_on_click(false)
                 .build(),
         )
+        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_google_auth::init());
 
     #[cfg(desktop)]

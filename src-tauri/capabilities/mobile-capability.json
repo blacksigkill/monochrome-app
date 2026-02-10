@@ -6,7 +6,16 @@
     "core:default",
     "core:event:default",
     "open-external",
-    "google-auth:default"
+    "google-auth:default",
+    "fs:allow-exists",
+    "fs:allow-write-file",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        "$DOCUMENT",
+        "$DOCUMENT/**"
+      ]
+    }
   ],
   "remote": {
     "urls": [

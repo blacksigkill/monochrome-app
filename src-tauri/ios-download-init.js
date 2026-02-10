@@ -75,16 +75,51 @@
         }, 3000);
     }
 
-    function blobToBase64(blob) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const result = reader.result;
-                resolve(result.substring(result.indexOf(',') + 1));
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
+    function getDocumentBaseDir() {
+        const baseDir = window.__TAURI__?.path?.BaseDirectory;
+        if (baseDir && typeof baseDir.Document !== 'undefined') {
+            return baseDir.Document;
+        }
+        return 6;
+    }
+
+    function sanitizeFilename(name) {
+        return name.replace(/[\/\\\0]/g, '_');
+    }
+
+    function splitFilename(name) {
+        const dotIndex = name.lastIndexOf('.');
+        if (dotIndex <= 0) {
+            return { stem: name, ext: '' };
+        }
+        return { stem: name.slice(0, dotIndex), ext: name.slice(dotIndex) };
+    }
+
+    async function resolveAvailableName(invoke, baseDir, filename) {
+        const { stem, ext } = splitFilename(filename);
+        let candidate = filename;
+        let n = 1;
+
+        while (
+            await invoke('plugin:fs|exists', {
+                path: candidate,
+                options: { baseDir: baseDir },
+            })
+        ) {
+            candidate = stem + ' (' + n + ')' + ext;
+            n += 1;
+        }
+
+        return candidate;
+    }
+
+    async function writeFile(invoke, baseDir, path, data) {
+        const headers = {
+            path: encodeURIComponent(path),
+            options: JSON.stringify({ baseDir: baseDir }),
+        };
+
+        await invoke('plugin:fs|write_file', data, { headers: headers });
     }
 
     // ── Download interception ──
@@ -116,13 +151,28 @@
             }
 
             try {
-                showToast('Saving ' + filename + '...');
-                const base64 = await blobToBase64(blob);
-                const savedName = await invoke('save_download', {
-                    filename: filename,
-                    dataBase64: base64,
+                const baseDir = getDocumentBaseDir();
+                const sanitized = sanitizeFilename(filename).trim() || 'download';
+                showToast('Saving ' + sanitized + '...');
+                console.info('[Monochrome] download start', {
+                    name: sanitized,
+                    bytes: blob.size,
                 });
-                showToast('Saved to Files: ' + savedName);
+
+                const resolvedName = await resolveAvailableName(
+                    invoke,
+                    baseDir,
+                    sanitized,
+                );
+
+                const arrayBuffer = await blob.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                await writeFile(invoke, baseDir, resolvedName, data);
+                showToast('Saved to Files: ' + resolvedName);
+                console.info('[Monochrome] download saved', {
+                    name: resolvedName,
+                    bytes: data.length,
+                });
             } catch (err) {
                 console.error('[Monochrome] Download save failed:', err);
                 showToast('Save failed: ' + (err.message || err), true);
