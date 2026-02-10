@@ -5,6 +5,7 @@
     "core:default",
     "core:window:default",
     "core:event:default",
+    "open-external",
     "shell:allow-open",
     "google-auth:default"
   ],

@@ -6,6 +6,7 @@
     "core:webview:allow-create-webview-window",
     "notification:default",
     "global-shortcut:default",
+    "open-external",
     "google-auth:default"
   ]
 }

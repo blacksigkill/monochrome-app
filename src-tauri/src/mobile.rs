@@ -9,12 +9,14 @@ mod android;
 // ── Setup ──
 
 pub fn configure(builder: tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri::Wry> {
-    builder
+    builder.invoke_handler(tauri::generate_handler![crate::open_external])
 }
 
 pub fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let mut init_script = String::new();
     init_script.push_str(include_str!("../google-auth-init.js"));
+    init_script.push('\n');
+    init_script.push_str(include_str!("../external-links.js"));
     init_script.push('\n');
     init_script.push_str(include_str!("../mobile-gestures.js"));
 

@@ -5,6 +5,7 @@
   "permissions": [
     "core:default",
     "core:event:default",
+    "open-external",
     "google-auth:default"
   ],
   "remote": {

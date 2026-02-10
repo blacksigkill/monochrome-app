@@ -176,7 +176,10 @@ pub fn configure(builder: tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri::W
         .manage(DownloadState {
             path: Mutex::new(None),
         })
-        .invoke_handler(tauri::generate_handler![update_discord_presence])
+        .invoke_handler(tauri::generate_handler![
+            update_discord_presence,
+            crate::open_external
+        ])
 }
 
 // ---------------------------------------------------------------------------
@@ -258,7 +261,10 @@ pub fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
 
     // Main window
     let app_handle = app.handle().clone();
-    let init_script = include_str!("../discord-init.js");
+    let mut init_script = String::new();
+    init_script.push_str(include_str!("../discord-init.js"));
+    init_script.push('\n');
+    init_script.push_str(include_str!("../external-links.js"));
     let window = WebviewWindowBuilder::new(
         app,
         "main",
