@@ -117,6 +117,10 @@ jobs:
                       query_schemes.append(scheme)
               data["LSApplicationQueriesSchemes"] = query_schemes
 
+              # Enable file sharing so downloads appear in Files app
+              data["UIFileSharingEnabled"] = True
+              data["LSSupportsOpeningDocumentsInPlace"] = True
+
               with open(path, "wb") as f:
                   plistlib.dump(data, f)
               patched.append(path)

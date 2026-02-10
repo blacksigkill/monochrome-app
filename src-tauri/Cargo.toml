@@ -20,6 +20,9 @@ tauri-plugin-google-auth = "0.5"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
+[target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
+base64 = "0.22"
+
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri = { version = "2", features = ["devtools", "tray-icon", "image-png"] }
 discord-rich-presence = "0.2"
