@@ -94,7 +94,7 @@ fn update_discord_presence(
             "large_text": "Music On Monochrome"
         },
         "buttons": [
-            { "label": "Listen On Monochrome", "url": "https://monochrome.samidy.com" }
+            { "label": "Listen On Monochrome", "url": crate::load_source_url(&app) }
         ]
     });
 
@@ -178,7 +178,9 @@ pub fn configure(builder: tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri::W
         })
         .invoke_handler(tauri::generate_handler![
             update_discord_presence,
-            crate::open_external
+            crate::open_external,
+            crate::get_source_url,
+            crate::set_source_url
         ])
 }
 
@@ -261,14 +263,20 @@ pub fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
 
     // Main window
     let app_handle = app.handle().clone();
+    let source_url = crate::load_source_url(app.handle());
     let mut init_script = String::new();
     init_script.push_str(include_str!("../discord-init.js"));
     init_script.push('\n');
     init_script.push_str(include_str!("../external-links.js"));
+    init_script.push('\n');
+    let fallback_script = include_str!("../url-error-fallback.js")
+        .replace("__EXPECTED_URL__", &source_url)
+        .replace("__DEFAULT_URL__", crate::DEFAULT_SOURCE_URL);
+    init_script.push_str(&fallback_script);
     let window = WebviewWindowBuilder::new(
         app,
         "main",
-        WebviewUrl::External("https://monochrome.samidy.com".parse().unwrap()),
+        WebviewUrl::External(source_url.parse().unwrap()),
     )
     .title("Monochrome")
     .inner_size(1200.0, 800.0)

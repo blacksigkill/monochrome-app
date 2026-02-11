@@ -18,9 +18,6 @@
     }
   ],
   "remote": {
-    "urls": [
-      "https://monochrome.samidy.com",
-      "https://monochrome-database.firebaseapp.com"
-    ]
+    "urls": ["https://*"]
   }
 }

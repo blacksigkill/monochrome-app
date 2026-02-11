@@ -1,5 +1,53 @@
-use tauri::AppHandle;
+use std::fs;
+use tauri::{AppHandle, Manager};
 use tauri_plugin_opener::OpenerExt;
+
+pub const DEFAULT_SOURCE_URL: &str = "https://monochrome.samidy.com";
+
+pub fn load_source_url(handle: &AppHandle) -> String {
+    if let Ok(config_dir) = handle.path().app_config_dir() {
+        let config_file = config_dir.join("source_url.txt");
+        if config_file.exists() {
+            if let Ok(content) = fs::read_to_string(config_file) {
+                let trimmed = content.trim().to_string();
+                if !trimmed.is_empty() {
+                    return trimmed;
+                }
+            }
+        }
+    }
+    DEFAULT_SOURCE_URL.to_string()
+}
+
+pub fn save_source_url(handle: &AppHandle, url: &str) {
+    if let Ok(config_dir) = handle.path().app_config_dir() {
+        if !config_dir.exists() {
+            let _ = fs::create_dir_all(&config_dir);
+        }
+        let config_file = config_dir.join("source_url.txt");
+        let _ = fs::write(config_file, url.as_bytes());
+    }
+}
+
+#[tauri::command]
+pub fn get_source_url(app: AppHandle) -> String {
+    load_source_url(&app)
+}
+
+#[tauri::command]
+pub fn set_source_url(app: AppHandle, url: String) -> Result<String, String> {
+    let url = url.trim().to_string();
+    if !url.starts_with("https://") {
+        return Err("Only HTTPS URLs are allowed".into());
+    }
+    let parsed = url::Url::parse(&url).map_err(|e| format!("Invalid URL: {}", e))?;
+    let url = parsed.to_string();
+    save_source_url(&app, &url);
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.navigate(parsed);
+    }
+    Ok(url)
+}
 
 #[tauri::command]
 fn open_external(app: AppHandle, url: String) -> Result<(), String> {
