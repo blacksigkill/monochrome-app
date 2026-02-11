@@ -1,59 +1,43 @@
-use std::ffi::c_void;
+use objc::runtime::{Object, BOOL};
+use objc::{class, msg_send, sel, sel_impl};
+use std::ffi::CString;
 
 // Link AVFoundation so AVAudioSession is available at runtime.
 #[link(name = "AVFoundation", kind = "framework")]
 extern "C" {}
 
-extern "C" {
-    fn objc_getClass(name: *const u8) -> *mut c_void;
-    fn sel_registerName(name: *const u8) -> *mut c_void;
-    fn objc_msgSend(receiver: *mut c_void, sel: *mut c_void, ...) -> *mut c_void;
-}
-
 /// Configure AVAudioSession with the `.playback` category.
 ///
 /// This tells iOS the app plays audio and should keep running in the
-/// background while audio is active.  When playback stops the system
+/// background while audio is active. When playback stops the system
 /// will suspend the app normally.
 fn configure_audio_session() {
     unsafe {
-        let cls = objc_getClass(b"AVAudioSession\0".as_ptr());
-        if cls.is_null() {
-            eprintln!("[Monochrome] AVAudioSession class not found");
-            return;
-        }
-
-        let session = objc_msgSend(cls, sel_registerName(b"sharedInstance\0".as_ptr()));
+        let session: *mut Object = msg_send![class!(AVAudioSession), sharedInstance];
         if session.is_null() {
-            eprintln!("[Monochrome] Failed to get AVAudioSession shared instance");
+            eprintln!("[Monochrome] AVAudioSession shared instance not available");
             return;
         }
 
-        // Build the NSString for the category name.
-        let ns_string = objc_getClass(b"NSString\0".as_ptr());
-        let category = objc_msgSend(
-            ns_string,
-            sel_registerName(b"stringWithUTF8String:\0".as_ptr()),
-            b"AVAudioSessionCategoryPlayback\0".as_ptr() as *const c_void,
-        );
+        let category_cstr = match CString::new("AVAudioSessionCategoryPlayback") {
+            Ok(value) => value,
+            Err(_) => {
+                eprintln!("[Monochrome] Failed to build AVAudioSession category string");
+                return;
+            }
+        };
 
-        let null: *mut c_void = std::ptr::null_mut();
+        let category: *mut Object =
+            msg_send![class!(NSString), stringWithUTF8String: category_cstr.as_ptr()];
+        if category.is_null() {
+            eprintln!("[Monochrome] Failed to build AVAudioSession category string");
+            return;
+        }
 
-        // [session setCategory:@"AVAudioSessionCategoryPlayback" error:nil]
-        let _ = objc_msgSend(
-            session,
-            sel_registerName(b"setCategory:error:\0".as_ptr()),
-            category,
-            null,
-        );
+        let mut error: *mut Object = std::ptr::null_mut();
 
-        // [session setActive:YES error:nil]
-        let _ = objc_msgSend(
-            session,
-            sel_registerName(b"setActive:error:\0".as_ptr()),
-            1usize as *mut c_void, // BOOL YES
-            null,
-        );
+        let _: BOOL = msg_send![session, setCategory: category error: &mut error];
+        let _: BOOL = msg_send![session, setActive: true error: &mut error];
 
         println!("[Monochrome] AVAudioSession configured for background playback");
     }
