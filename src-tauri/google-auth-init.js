@@ -24,6 +24,10 @@
         }
     }
 
+    function isLoginPage() {
+        return window.location.pathname.indexOf('/login') === 0;
+    }
+
     async function signInWithGooglePlugin() {
         if (!CLIENT_ID || CLIENT_ID.startsWith('REPLACE_ME')) {
             alert('Google OAuth client ID is missing.');
@@ -49,7 +53,20 @@
 
         const credential = GoogleAuthProvider.credential(tokens.idToken, tokens.accessToken);
         const auth = getAuth();
-        await signInWithCredential(auth, credential);
+        const userCredential = await signInWithCredential(auth, credential);
+
+        if (isLoginPage()) {
+            const idToken = await userCredential.user.getIdToken();
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: idToken }),
+            });
+            if (!res.ok) {
+                throw new Error('Server login failed: ' + res.status);
+            }
+            window.location.href = '/';
+        }
     }
 
     function shouldIntercept(btn) {
@@ -60,15 +77,16 @@
 
     function findConnectButton(event) {
         if (!event) return null;
+        const selector = '#firebase-connect-btn, #google-btn';
         if (event.composedPath) {
             const path = event.composedPath();
             for (const item of path) {
-                if (item && item.id === 'firebase-connect-btn') return item;
+                if (item && item.matches && item.matches(selector)) return item;
             }
         }
         const target = event.target;
         if (target && target.closest) {
-            return target.closest('#firebase-connect-btn');
+            return target.closest(selector);
         }
         return null;
     }
