@@ -4,6 +4,82 @@
     }
     window.__monochromeSwipeInit = true;
 
+    function getHead() {
+        return document.head || document.getElementsByTagName('head')[0] || null;
+    }
+
+    function disableZoomOnce() {
+        var head = getHead();
+        if (!head) return false;
+
+        var viewport = document.querySelector('meta[name="viewport"]');
+        if (!viewport) {
+            viewport = document.createElement('meta');
+            viewport.setAttribute('name', 'viewport');
+            head.appendChild(viewport);
+            viewport.setAttribute(
+                'content',
+                'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
+            );
+            return true;
+        }
+
+        var content = viewport.getAttribute('content') || '';
+        var parts = content
+            .split(',')
+            .map(function(part) {
+                return part.trim();
+            })
+            .filter(Boolean);
+        var map = {};
+
+        parts.forEach(function(part) {
+            var eq = part.indexOf('=');
+            if (eq === -1) {
+                map[part] = true;
+            } else {
+                var key = part.slice(0, eq).trim();
+                var value = part.slice(eq + 1).trim();
+                map[key] = value;
+            }
+        });
+
+        map['user-scalable'] = 'no';
+        map['maximum-scale'] = '1';
+        if (!map.width) map.width = 'device-width';
+        if (!map['initial-scale']) map['initial-scale'] = '1';
+
+        var updated = Object.keys(map)
+            .map(function(key) {
+                var value = map[key];
+                if (value === true || value === '') return key;
+                return key + '=' + value;
+            })
+            .join(', ');
+
+        viewport.setAttribute('content', updated);
+        return true;
+    }
+
+    function disableZoom() {
+        if (disableZoomOnce()) return;
+        document.addEventListener('DOMContentLoaded', disableZoomOnce, { once: true });
+        window.addEventListener('load', disableZoomOnce, { once: true });
+    }
+
+    function blockZoomGestures() {
+        function prevent(event) {
+            event.preventDefault();
+        }
+
+        document.addEventListener('gesturestart', prevent, { passive: false });
+        document.addEventListener('gesturechange', prevent, { passive: false });
+        document.addEventListener('gestureend', prevent, { passive: false });
+    }
+
+    disableZoom();
+    blockZoomGestures();
+
     function getSidebarElements() {
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.getElementById('sidebar-overlay');
