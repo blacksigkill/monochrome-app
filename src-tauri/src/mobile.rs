@@ -28,6 +28,8 @@ pub fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     init_script.push('\n');
     init_script.push_str(include_str!("../mobile-gestures.js"));
     init_script.push('\n');
+    init_script.push_str(include_str!("../media-remote-init.js"));
+    init_script.push('\n');
     let settings_script = include_str!("../source-url-settings.js")
         .replace("__DEFAULT_URL__", crate::DEFAULT_SOURCE_URL);
     init_script.push_str(&settings_script);
@@ -44,8 +46,6 @@ pub fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     )
     .initialization_script(init_script)
     .build()?;
-
-    println!("[DEBUG] mobile webview built");
 
     #[cfg(target_os = "ios")]
     ios::setup(app)?;

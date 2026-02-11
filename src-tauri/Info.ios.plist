@@ -6,6 +6,8 @@
   <true/>
   <key>LSSupportsOpeningDocumentsInPlace</key>
   <true/>
+  <key>NSAppleMusicUsageDescription</key>
+  <string>Allow audio playback and media control.</string>
   <key>UIBackgroundModes</key>
   <array>
     <string>audio</string>

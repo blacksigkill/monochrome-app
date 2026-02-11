@@ -75,6 +75,7 @@ mod mobile;
 pub fn run() {
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_media_toolkit::init())
         .plugin(
             tauri_plugin_opener::Builder::new()
                 .open_js_links_on_click(false)

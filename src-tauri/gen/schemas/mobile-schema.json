@@ -6105,6 +6105,192 @@
           "markdownDescription": "Denies the sign_out command without any pre-configured scope."
         },
         {
+          "description": "Default permissions for the Media Toolkit plugin - allows all media operations (editing, playback, analysis)\n#### This default permission set includes:\n\n- `allow-select-media-file`\n- `allow-get-media-info`\n- `allow-trim`\n- `allow-convert`\n- `allow-extract-audio`\n- `allow-play`\n- `allow-pause`\n- `allow-resume`\n- `allow-stop`\n- `allow-seek`\n- `allow-get-playback-status`\n- `allow-set-volume`\n- `allow-check-permission`\n- `allow-request-permission`\n- `allow-cleanup-cache`",
+          "type": "string",
+          "const": "media-toolkit:default",
+          "markdownDescription": "Default permissions for the Media Toolkit plugin - allows all media operations (editing, playback, analysis)\n#### This default permission set includes:\n\n- `allow-select-media-file`\n- `allow-get-media-info`\n- `allow-trim`\n- `allow-convert`\n- `allow-extract-audio`\n- `allow-play`\n- `allow-pause`\n- `allow-resume`\n- `allow-stop`\n- `allow-seek`\n- `allow-get-playback-status`\n- `allow-set-volume`\n- `allow-check-permission`\n- `allow-request-permission`\n- `allow-cleanup-cache`"
+        },
+        {
+          "description": "Enables the check_permission command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-check-permission",
+          "markdownDescription": "Enables the check_permission command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the cleanup_cache command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-cleanup-cache",
+          "markdownDescription": "Enables the cleanup_cache command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the convert command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-convert",
+          "markdownDescription": "Enables the convert command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the extract_audio command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-extract-audio",
+          "markdownDescription": "Enables the extract_audio command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the get_media_info command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-get-media-info",
+          "markdownDescription": "Enables the get_media_info command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the get_playback_status command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-get-playback-status",
+          "markdownDescription": "Enables the get_playback_status command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the pause command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-pause",
+          "markdownDescription": "Enables the pause command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the play command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-play",
+          "markdownDescription": "Enables the play command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the request_permission command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-request-permission",
+          "markdownDescription": "Enables the request_permission command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the resume command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-resume",
+          "markdownDescription": "Enables the resume command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the seek command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-seek",
+          "markdownDescription": "Enables the seek command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the select_media_file command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-select-media-file",
+          "markdownDescription": "Enables the select_media_file command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the set_volume command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-set-volume",
+          "markdownDescription": "Enables the set_volume command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the stop command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-stop",
+          "markdownDescription": "Enables the stop command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the trim command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:allow-trim",
+          "markdownDescription": "Enables the trim command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the check_permission command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-check-permission",
+          "markdownDescription": "Denies the check_permission command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the cleanup_cache command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-cleanup-cache",
+          "markdownDescription": "Denies the cleanup_cache command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the convert command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-convert",
+          "markdownDescription": "Denies the convert command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the extract_audio command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-extract-audio",
+          "markdownDescription": "Denies the extract_audio command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_media_info command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-get-media-info",
+          "markdownDescription": "Denies the get_media_info command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_playback_status command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-get-playback-status",
+          "markdownDescription": "Denies the get_playback_status command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the pause command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-pause",
+          "markdownDescription": "Denies the pause command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the play command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-play",
+          "markdownDescription": "Denies the play command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the request_permission command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-request-permission",
+          "markdownDescription": "Denies the request_permission command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the resume command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-resume",
+          "markdownDescription": "Denies the resume command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the seek command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-seek",
+          "markdownDescription": "Denies the seek command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the select_media_file command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-select-media-file",
+          "markdownDescription": "Denies the select_media_file command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the set_volume command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-set-volume",
+          "markdownDescription": "Denies the set_volume command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the stop command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-stop",
+          "markdownDescription": "Denies the stop command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the trim command without any pre-configured scope.",
+          "type": "string",
+          "const": "media-toolkit:deny-trim",
+          "markdownDescription": "Denies the trim command without any pre-configured scope."
+        },
+        {
           "description": "This permission set allows opening `mailto:`, `tel:`, `https://` and `http://` urls using their default application\nas well as reveal file in directories using default file explorer\n#### This default permission set includes:\n\n- `allow-open-url`\n- `allow-reveal-item-in-dir`\n- `allow-default-urls`",
           "type": "string",
           "const": "opener:default",
