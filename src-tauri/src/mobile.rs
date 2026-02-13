@@ -28,6 +28,11 @@ pub fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     init_script.push('\n');
     init_script.push_str(include_str!("../mobile-gestures.js"));
     init_script.push('\n');
+    #[cfg(target_os = "android")]
+    {
+        init_script.push_str(include_str!("../safe-area-insets-android.js"));
+        init_script.push('\n');
+    }
     init_script.push_str(include_str!("../media-remote-init.js"));
     init_script.push('\n');
     let settings_script = include_str!("../source-url-settings.js")
