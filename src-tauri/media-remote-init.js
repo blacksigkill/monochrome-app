@@ -132,55 +132,8 @@
     duration: null,
     isPlaying: null,
     canNext: null,
+    artworkUrl: null,
   };
-  var lastArtworkSrc = null;
-  var lastArtworkBase64 = null;
-  var artworkSentToPlugin = false;
-
-  function encodeArtwork() {
-    var img = document.querySelector('.now-playing-bar img.cover');
-    if (!img || !img.naturalWidth || !img.complete) return;
-    if (img.src === lastArtworkSrc) return;
-
-    // Try canvas encoding (works for same-origin images)
-    try {
-      var size = Math.min(img.naturalWidth, 512);
-      var canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
-      canvas.getContext('2d').drawImage(img, 0, 0, size, size);
-      var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-      lastArtworkSrc = img.src;
-      lastArtworkBase64 = dataUrl.split(',')[1] || null;
-      artworkSentToPlugin = false;
-      return;
-    } catch (e) {
-      console.warn('[MediaSession] canvas encode failed (CORS?), trying fetch:', e.message);
-    }
-
-    // Fallback: fetch as blob → base64 (works when server sends CORS headers)
-    var src = img.src;
-    fetch(src)
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
-      .then(function (blob) {
-        return new Promise(function (resolve, reject) {
-          var reader = new FileReader();
-          reader.onloadend = function () { resolve(reader.result); };
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      })
-      .then(function (dataUrl) {
-        lastArtworkSrc = src;
-        lastArtworkBase64 = dataUrl.split(',')[1] || null;
-        artworkSentToPlugin = false;
-        sendTrackInfo();
-      })
-      .catch(function (e) {
-        console.warn('[MediaSession] artwork fetch fallback failed:', e.message || e);
-        lastArtworkBase64 = null;
-      });
-  }
 
   function sendToPlugin(payload) {
     waitForTauri().then(function (ready) {
@@ -188,13 +141,7 @@
       var core = getTauriCore();
       if (!core) return;
       var logFields = {};
-      for (var k in payload) {
-        if (k === 'artwork') {
-          logFields.artwork = '(' + Math.round(payload.artwork.length / 1024) + 'KB)';
-        } else {
-          logFields[k] = payload[k];
-        }
-      }
+      for (var k in payload) { logFields[k] = payload[k]; }
       console.log('[MediaSession] \u2192', JSON.stringify(logFields));
       core.invoke('plugin:' + ANDROID_PLUGIN + '|update_state', payload).then(
         function () {},
@@ -210,8 +157,8 @@
     var artist = readText('.track-info .details .artist') || readText('#fullscreen-track-artist');
     var album = readText('.track-info .details .album');
     var duration = audio && Number.isFinite(audio.duration) ? audio.duration : null;
-
-    encodeArtwork();
+    var img = document.querySelector('.now-playing-bar img.cover');
+    var artworkUrl = img && img.src ? img.src : null;
 
     var payload = {};
     var changed = false;
@@ -222,9 +169,10 @@
     if (album !== sent.album) { payload.album = album || null; sent.album = album; changed = true; }
     if (duration !== sent.duration) { payload.duration = duration; sent.duration = duration; changed = true; }
 
-    if (!artworkSentToPlugin && lastArtworkBase64) {
-      payload.artwork = lastArtworkBase64;
-      artworkSentToPlugin = true;
+    // Send artwork URL — the plugin downloads natively (no CORS)
+    if (artworkUrl !== sent.artworkUrl) {
+      payload.artworkUrl = artworkUrl || '';
+      sent.artworkUrl = artworkUrl;
       changed = true;
     }
 
