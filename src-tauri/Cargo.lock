@@ -4158,9 +4158,9 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-media-session"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf191e285c0d9a1cc457bf2335178200c257b5503dfe96980a011cbfeda30d06"
 version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc6400028be20ffbee89ca7785e04fd65cc8a2aecbc719ceb6212e08e1646ecc"
 dependencies = [
  "serde",
  "tauri",
