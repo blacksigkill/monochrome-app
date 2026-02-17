@@ -163,6 +163,7 @@
   var observeRetryTimer = null;
   var audioAttachPollTimer = null;
   var timelineTickTimer = null;
+  var metadataResyncTimer = null;
   var trackedListeners = [];
 
   function addTrackedListener(target, type, handler, options) {
@@ -203,11 +204,38 @@
     timelineTickTimer = null;
   }
 
+  function clearMetadataResyncTimer() {
+    if (!metadataResyncTimer) return;
+    window.clearInterval(metadataResyncTimer);
+    metadataResyncTimer = null;
+  }
+
   function getPlaybackSpeed(audio) {
     if (!audio) return 1;
     var speed = Number.isFinite(audio.playbackRate) ? audio.playbackRate : 1;
     if (speed <= 0) return 1;
     return speed;
+  }
+
+  function getDuration(audio) {
+    if (!audio) return null;
+
+    var directDuration = Number.isFinite(audio.duration) ? audio.duration : null;
+    if (directDuration != null && directDuration > 0) {
+      return directDuration;
+    }
+
+    var seekable = audio.seekable;
+    if (seekable && seekable.length > 0) {
+      try {
+        var seekableEnd = seekable.end(seekable.length - 1);
+        if (Number.isFinite(seekableEnd) && seekableEnd > 0) {
+          return seekableEnd;
+        }
+      } catch (_) {}
+    }
+
+    return null;
   }
 
   function sendTimelineToPlugin(payload) {
@@ -231,7 +259,7 @@
       var audio = getAudio();
       if (!audio || audio.paused || audio.ended) return;
       var pos = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
-      var duration = Number.isFinite(audio.duration) ? audio.duration : null;
+      var duration = getDuration(audio);
       var playbackSpeed = getPlaybackSpeed(audio);
       sent.position = pos;
       sent.playbackSpeed = playbackSpeed;
@@ -251,11 +279,16 @@
 
     addTrackedListener(audio, 'play', registerMediaSessionHandlers);
     addTrackedListener(audio, 'loadedmetadata', registerMediaSessionHandlers);
+    addTrackedListener(audio, 'play', sendTrackInfo);
+    addTrackedListener(audio, 'pause', sendTrackInfo);
+    addTrackedListener(audio, 'loadedmetadata', sendTrackInfo);
     addTrackedListener(audio, 'play', sendPlaybackState);
     addTrackedListener(audio, 'pause', sendPlaybackState);
     addTrackedListener(audio, 'ended', sendPlaybackState);
     addTrackedListener(audio, 'loadedmetadata', sendDuration);
     addTrackedListener(audio, 'durationchange', sendDuration);
+    addTrackedListener(audio, 'canplay', sendDuration);
+    addTrackedListener(audio, 'progress', sendDuration);
     addTrackedListener(audio, 'seeked', sendSeekPosition);
 
     if (isNativeMobile) {
@@ -271,6 +304,17 @@
       if (isUnloading) return;
       attachAudioListeners(getAudio());
     }, 1000);
+  }
+
+  function startMetadataResyncTimer() {
+    if (!isIOS) return;
+    if (metadataResyncTimer) return;
+    metadataResyncTimer = window.setInterval(function () {
+      if (isUnloading) return;
+      sendTrackInfo();
+      sendCanNext();
+      sendDuration();
+    }, 1500);
   }
 
   function disconnectObservers() {
@@ -312,7 +356,7 @@
     var title = readText('.track-info .details .title') || readText('#fullscreen-track-title');
     var artist = readText('.track-info .details .artist') || readText('#fullscreen-track-artist');
     var album = readText('.track-info .details .album');
-    var duration = audio && Number.isFinite(audio.duration) ? audio.duration : null;
+    var duration = getDuration(audio);
     var playbackSpeed = getPlaybackSpeed(audio);
     var img = document.querySelector('.now-playing-bar img.cover');
     var artworkUrl = img && img.src ? img.src : null;
@@ -421,7 +465,7 @@
     if (isUnloading) return;
     var audio = getAudio();
     if (!audio) return;
-    var duration = Number.isFinite(audio.duration) ? audio.duration : null;
+    var duration = getDuration(audio);
     if (duration === sent.duration) return;
     sent.duration = duration;
     sendToPlugin({ duration: duration });
@@ -536,6 +580,7 @@
           sendTrackInfo();
         });
         detailsObserver.observe(details, { childList: true, subtree: true, characterData: true });
+        sendTrackInfo();
       }
     }
 
@@ -573,6 +618,7 @@
       sendTrackInfo();
       sendCanNext();
       listenNativeMediaActions();
+      startMetadataResyncTimer();
       if (audio && !audio.paused && !audio.ended) sendPlaybackState();
     }
 
@@ -587,17 +633,21 @@
   }
 
   function startShutdownCleanup() {
+    if (isIOS) return;
     if (isUnloading) return;
     isUnloading = true;
     clearObserveRetryTimer();
     clearAudioAttachPollTimer();
     clearTimelineTickTimer();
+    clearMetadataResyncTimer();
     clearTrackedListeners();
     disconnectObservers();
     cleanupNativeMediaActionListener();
     clearNativeMediaSession();
   }
 
-  window.addEventListener('beforeunload', startShutdownCleanup);
-  window.addEventListener('unload', startShutdownCleanup);
+  if (!isIOS) {
+    window.addEventListener('beforeunload', startShutdownCleanup);
+    window.addEventListener('unload', startShutdownCleanup);
+  }
 })();

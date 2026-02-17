@@ -79,7 +79,17 @@ pub fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         .replace("__DEFAULT_URL__", crate::DEFAULT_SOURCE_URL);
     init_script.push_str(&fallback_script);
 
+    #[cfg(target_os = "android")]
     let window = WebviewWindowBuilder::new(
+        app,
+        "main",
+        WebviewUrl::External(source_url.parse().unwrap()),
+    )
+    .initialization_script(init_script.clone())
+    .build()?;
+
+    #[cfg(not(target_os = "android"))]
+    let _window = WebviewWindowBuilder::new(
         app,
         "main",
         WebviewUrl::External(source_url.parse().unwrap()),
@@ -87,7 +97,7 @@ pub fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     .initialization_script(init_script)
     .build()?;
 
-    #[cfg(mobile)]
+    #[cfg(target_os = "android")]
     {
         use tauri_plugin_media_session::MediaSessionExt;
 
