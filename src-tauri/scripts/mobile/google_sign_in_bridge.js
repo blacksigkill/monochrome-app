@@ -41,16 +41,11 @@
         }
 
         const invoke = getInvoke();
-        if (!invoke) {
-            return;
-        }
+        if (!invoke) return;
 
         setStatus('Opening Google sign-in...');
         const tokens = await invoke('plugin:google-auth|sign_in', {
-            payload: {
-                clientId: CLIENT_ID,
-                scopes: SCOPES,
-            },
+            payload: { clientId: CLIENT_ID, scopes: SCOPES },
         });
 
         const { getAuth, GoogleAuthProvider, signInWithCredential } = await import(
@@ -59,19 +54,14 @@
 
         const credential = GoogleAuthProvider.credential(tokens.idToken, tokens.accessToken);
         const auth = getAuth();
-        const userCredential = await signInWithCredential(auth, credential);
+        await signInWithCredential(auth, credential);
 
         if (isLoginPage()) {
-            const idToken = await userCredential.user.getIdToken();
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: idToken }),
-            });
-            if (!res.ok) {
-                throw new Error('Server login failed: ' + res.status);
-            }
-            window.location.href = '/';
+            window.location.replace('/');
+        } else {
+            // Fermer le dropdown en douceur, le frontend web s'occupe de mettre à jour son contenu via onAuthStateChanged
+            const dropdown = document.getElementById('header-account-dropdown');
+            if (dropdown) dropdown.classList.remove('active');
         }
     }
 
@@ -98,6 +88,14 @@
     }
 
     function onClick(event) {
+        // Intercepter silencieusement le bouton de déconnexion pour refermer le menu
+        const target = event.target;
+        if (target && target.closest && target.closest('#header-sign-out')) {
+            const dropdown = document.getElementById('header-account-dropdown');
+            if (dropdown) dropdown.classList.remove('active');
+            // On le laisse continuer pour que le vrai script du site web gère la déconnexion Firebase
+        }
+
         const btn = findConnectButton(event);
         if (!btn) return;
         if (!shouldIntercept(btn)) return;
