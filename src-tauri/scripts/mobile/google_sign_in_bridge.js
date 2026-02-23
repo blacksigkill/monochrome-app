@@ -4,7 +4,13 @@
     }
     window.__monochromeGoogleAuthInjected = true;
 
-    const CLIENT_ID = '895657412760-c5snes8l2o0sgrarq5fkhl04n3mb59u9.apps.googleusercontent.com';
+    // iOS client ID (from GoogleService-Info.plist, type 2)
+    const IOS_CLIENT_ID = '895657412760-c5snes8l2o0sgrarq5fkhl04n3mb59u9.apps.googleusercontent.com';
+    // Android web/server client ID (from google-services.json, type 3)
+    const ANDROID_CLIENT_ID = '895657412760-batt2m0sfdn6nvkv8vv1th081b74cpe6.apps.googleusercontent.com';
+
+    const isAndroid = /android/i.test(navigator.userAgent);
+    const CLIENT_ID = isAndroid ? ANDROID_CLIENT_ID : IOS_CLIENT_ID;
     const SCOPES = ['openid', 'email', 'profile'];
 
     function getInvoke() {
