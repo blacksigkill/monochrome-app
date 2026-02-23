@@ -1,4 +1,4 @@
-(function() {
+(function () {
     if (window.__monochromeGoogleAuthInjected) {
         return;
     }
@@ -83,7 +83,7 @@
 
     function findConnectButton(event) {
         if (!event) return null;
-        const selector = '#firebase-connect-btn, #google-btn';
+        const selector = '#header-google-auth, #firebase-connect-btn, #google-btn';
         if (event.composedPath) {
             const path = event.composedPath();
             for (const item of path) {
@@ -101,11 +101,15 @@
         const btn = findConnectButton(event);
         if (!btn) return;
         if (!shouldIntercept(btn)) return;
-        if (!getInvoke()) return;
+
+        const invoke = getInvoke();
+        if (!invoke) return;
+
         event.preventDefault();
         event.stopImmediatePropagation();
+
         signInWithGooglePlugin().catch((error) => {
-            console.error('Google sign-in failed:', error);
+            console.error('[Google Auth Bridge] Google sign-in failed:', error);
             setStatus('Google sign-in failed.');
             alert(`Google sign-in failed: ${error?.message || error}`);
         });
