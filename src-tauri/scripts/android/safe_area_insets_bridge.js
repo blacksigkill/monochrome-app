@@ -93,6 +93,9 @@
                 top: calc(1rem + var(--safe-area-inset-top, 0px)) !important;
                 right: calc(4.5rem + var(--safe-area-inset-right, 0px)) !important;
             }
+            footer.now-playing-bar {
+                bottom: var(--safe-area-inset-bottom, 0px) !important;
+            }
         `;
         (document.head || document.documentElement).appendChild(style);
     }
